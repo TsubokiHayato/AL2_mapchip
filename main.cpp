@@ -293,7 +293,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//ブロック
 		for (int i = 0; i < 25; i++) {
-			for (int j = 0; j < 25; j++) {
+			for (int j = 0; j < 50; j++) {
 
 				if (data[i][j] == 1) {
 					Novice::DrawSprite(j * BlockSize, i * BlockSize, BlockGH, 1, 1, 0.0f, WHITE);
@@ -318,7 +318,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Novice::ScreenPrintf(0, BlockSize * 29, "leftTop[%d][%d] = %d", (int)temp.LeftTop.y, (int)temp.LeftTop.x,
 			data[(int)temp.LeftTop.y][(int)temp.LeftTop.x]);
 
-			Novice::ScreenPrintf(0, 410, "ison=%d",isOn);
+			Novice::ScreenPrintf(0, 410, "isOn=%d",isOn);
 		///
 		/// ↑描画処理ここまで
 		///
