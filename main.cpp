@@ -7,10 +7,15 @@ struct Vector2 {
 	float y;
 };
 
+struct IntVector2 {
+	int x;
+	int y;
+};
+
 
 struct Player {
 	Vector2 pos;
-	Vector2 velosity;
+	Vector2 velocity;
 	Vector2 acceleration;
 
 	Vector2 LeftTop;
@@ -73,11 +78,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	};
 	Player player;
 	player.pos.x = 50.0f;
-	player.pos.y = 32*23.0f;
-	player.velosity.x = 8.0f;
-	player.velosity.y = 2.0f;
-
-
+	player.pos.y = 32 * 23.0f;
+	player.velocity.x = 8.0f;
+	player.velocity.y = 0.0f;
+	player.acceleration.y = 0.6f;
 
 	player.LeftTop.x = player.pos.x + 1 - BlockSize / 2.0f;
 	player.LeftTop.y = player.pos.y + 1 - BlockSize / 2.0f;
@@ -91,11 +95,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	player.RightBottom.x = player.pos.x - 1 + BlockSize / 2.0f;
 	player.RightBottom.y = player.pos.x - 1 + BlockSize / 2.0f;
 
+
+	Player tempP;
+	tempP.pos.x = player.pos.x;
+	tempP.pos.y = player.pos.y;
+
 	//playerの四点の位置
 	Temp temp;
-
-
-
 
 	temp.LeftTop.x = player.LeftTop.x / BlockSize;
 	temp.LeftTop.y = player.LeftTop.y / BlockSize;
@@ -109,12 +115,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	temp.RightBottom.x = player.RightBottom.x / BlockSize;
 	temp.RightBottom.y = player.RightBottom.y / BlockSize;
 
+	bool isJump = false;
 
-	float OldPosX = 0.0f;
-	float OldPosY = 0.0f;
+	IntVector2 playerMap;
+	playerMap.x = (int)player.pos.x / BlockSize;
+	playerMap.y = (int)player.pos.y / BlockSize;
 
-	bool isOn = false;
-	bool isjump = false;
+
 	// キー入力結果を受け取る箱
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
@@ -140,12 +147,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/*プレイヤーの操作*/
 
 		//キー入力する前のポジションを保存
-		OldPosX = player.pos.x;
-		OldPosY = player.pos.y;
+		tempP.pos.x = player.pos.x;
 
 
 		if (keys[DIK_A]) {
-			player.pos.x -= player.velosity.x;
+			player.pos.x -= player.velocity.x;
 
 			player.LeftTop.x = player.pos.x + 1 - BlockSize / 2.0f;
 			player.LeftTop.y = player.pos.y + 1 - BlockSize / 2.0f;
@@ -161,14 +167,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			if (data[(int)temp.LeftTop.y][(int)temp.LeftTop.x] == 1 ||
 				data[(int)temp.LeftBottom.y][(int)temp.LeftBottom.x] == 1) {
-				player.pos.x = OldPosX;
-				isOn = false;
+				player.pos.x = tempP.pos.x;
 
 			}
 
 		}
 		if (keys[DIK_D]) {
-			player.pos.x += player.velosity.x;
+			player.pos.x += player.velocity.x;
 
 
 			player.RightTop.x = player.pos.x - 1 + BlockSize / 2.0f;
@@ -186,8 +191,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			if (data[(int)temp.RightTop.y][(int)temp.RightTop.x] == 1 ||
 				data[(int)temp.RightBottom.y][(int)temp.RightBottom.x] == 1) {
-				player.pos.x = OldPosX;
-				isOn = false;
+				player.pos.x = tempP.pos.x;
 
 			}
 
@@ -195,22 +199,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-		if (!isjump) {
-			if (keys[DIK_SPACE] && preKeys[DIK_SPACE] == 0) {
-				player.velosity.y = 12.0f;
-				
-				isjump = true;
-				
 
-
-			}
+		if (keys[DIK_SPACE] && preKeys[DIK_SPACE] == 0) {
+			player.velocity.y = 12.0f;
+			isJump = true;
 		}
 
-		if (isOn == 0) {
+
+
+
+		player.pos.y -= player.velocity.y;
+
+
+		if (isJump) {
 			player.acceleration.y = 0.6f;
 
-			player.velosity.y -= player.acceleration.y;
-			player.pos.y -= player.velosity.y;
+			player.velocity.y -= player.acceleration.y;
 
 			player.LeftBottom.x = player.pos.x + 1 - BlockSize / 2.0f;
 			player.LeftBottom.y = player.pos.y - 1 + BlockSize / 2.0f;
@@ -223,26 +227,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			temp.RightBottom.x = player.RightBottom.x / BlockSize;
 			temp.RightBottom.y = player.RightBottom.y / BlockSize;
-		} else {
-			OldPosX = player.pos.x;
-			OldPosY = player.pos.y;
-		}
 
+		}
 
 		if (data[(int)temp.LeftBottom.y][(int)temp.LeftBottom.x] == 1 ||
 			data[(int)temp.RightBottom.y][(int)temp.RightBottom.x] == 1) {
 
-			player.pos.y = OldPosY;
-			isOn = true;
-			isjump = false;
-		} else {
-			isOn = false;
+			isJump = false;
+
+			playerMap.y = (int)player.pos.y / BlockSize;
+
+			player.pos.y = (float)(playerMap.y * BlockSize) + BlockSize / 2 - 1;
+
+
 		}
 
 
 
 
-		
+
 
 		//playerの左上の頂点のマップの位置の更新
 		temp.LeftTop.x = player.LeftTop.x / BlockSize;
@@ -255,30 +258,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (data[(int)temp.LeftTop.y][(int)temp.LeftTop.x] == 1 ||
 			data[(int)temp.RightTop.y][(int)temp.RightTop.x] == 1) {
 
-			//キー入力する前のポジションに戻す
-			player.pos.y = OldPosY;
-			isOn = false;
-		} 
-			
-		//playerの左上の頂点を更新
-		player.LeftTop.x = player.pos.x + 1 - BlockSize / 2.0f;
-		player.LeftTop.y = player.pos.y + 1 - BlockSize / 2.0f;
-		//playerの右上の頂点を更新
-		player.RightTop.x = player.pos.x - 1 + BlockSize / 2.0f;
-		player.RightTop.y = player.pos.y + 1 - BlockSize / 2.0f;
+			isJump = false;
 
-			if (data[(int)temp.LeftBottom.y][(int)temp.LeftBottom.x] == 1 ||
-				data[(int)temp.RightBottom.y][(int)temp.RightBottom.x] == 1) {
+			playerMap.y = (int)player.pos.y / BlockSize;
 
-				player.pos.y = OldPosY;
-			}
+			player.pos.y = (float)(playerMap.y * BlockSize);
 
-		
-
-		
+		}
 
 
-	
+
+
+
+
+
+
+
 
 		///
 		/// ↑更新処理ここまで
@@ -318,7 +313,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Novice::ScreenPrintf(0, BlockSize * 29, "leftTop[%d][%d] = %d", (int)temp.LeftTop.y, (int)temp.LeftTop.x,
 			data[(int)temp.LeftTop.y][(int)temp.LeftTop.x]);
 
-			Novice::ScreenPrintf(0, 410, "isOn=%d",isOn);
+
 		///
 		/// ↑描画処理ここまで
 		///
